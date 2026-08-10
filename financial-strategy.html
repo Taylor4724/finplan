@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FinPlan — Justin Taylor</title>
+<style>
+:root{
+  --bg:#0f1117;--surf:#1a1d27;--surf2:#22263a;--bdr:#2e3247;
+  --green:#22c55e;--gdim:#166534;--gbg:#052e16;
+  --blue:#60a5fa;--bdim:#1e40af;--bbg:#0c1a3a;
+  --gold:#fbbf24;--ydim:#92400e;--ybg:#1c1208;
+  --purple:#a78bfa;--pdim:#4c1d95;--pbg:#130a2a;
+  --red:#f87171;--rdim:#991b1b;--rbg:#1c0505;
+  --orange:#fb923c;--odim:#9a3412;--obg:#1c0a00;
+  --text:#f1f5f9;--dim:#94a3b8;--muted:#64748b;
+  --mono:'SF Mono','Fira Code',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;-webkit-text-size-adjust:100%}
+nav{background:var(--surf);border-bottom:1px solid var(--bdr);padding:0 16px;display:flex;align-items:center;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:0;z-index:100}
+nav::-webkit-scrollbar{display:none}
+.nav-title{font-size:12px;font-weight:800;color:var(--green);white-space:nowrap;padding:14px 14px 14px 0;border-right:1px solid var(--bdr);margin-right:6px;letter-spacing:.08em;text-transform:uppercase}
+nav button{background:none;border:none;color:var(--dim);font-size:13px;font-family:var(--sans);padding:14px 12px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;font-weight:500}
+nav button.active{color:var(--text);border-bottom-color:var(--green)}
+.page{display:none;padding:16px}
+.page.active{display:block}
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:16px;margin-bottom:12px}
+.card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.tile{border-radius:10px;padding:12px;border:1px solid transparent}
+.tile .tl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.7;margin-bottom:4px}
+.tile .ta{font-size:18px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em}
+.tile .ts{font-size:10px;opacity:.6;margin-top:3px}
+.tile.bp{background:var(--gbg);border-color:var(--gdim);color:var(--green)}
+.tile.sp{background:var(--bbg);border-color:var(--bdim);color:var(--blue)}
+.tile.ne{background:var(--ybg);border-color:var(--ydim);color:var(--gold)}
+.tile.gf{background:var(--pbg);border-color:var(--pdim);color:var(--purple)}
+.tile.eq{background:var(--rbg);border-color:var(--rdim);color:var(--red)}
+.tile.tr{background:var(--surf2);border-color:var(--bdr);color:var(--dim)}
+.tile.mo{background:var(--bbg);border-color:var(--bdim);color:var(--blue)}
+.tile.wide{grid-column:span 2}
+.datebar{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.datebar .dl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.datebar .dv{font-size:15px;font-weight:700;color:var(--green);font-family:var(--mono)}
+.datebar button{background:var(--gbg);border:1px solid var(--gdim);color:var(--green);border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer}
+input,select{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;color:var(--text);font-size:14px;font-family:var(--sans);padding:10px 12px;width:100%;outline:none;-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--green)}
+label{display:block;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.field{margin-bottom:12px}
+.btn{background:var(--green);color:#000;border:none;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer;width:100%;font-family:var(--sans)}
+.btn.sec{background:var(--surf2);color:var(--text);border:1px solid var(--bdr)}
+.btn.danger{background:var(--rbg);color:var(--red);border:1px solid var(--rdim)}
+.btn.orange{background:var(--obg);color:var(--orange);border:1px solid var(--odim)}
+.tx-row{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr);gap:8px}
+.tx-row:last-child{border-bottom:none}
+.tx-info{flex:1;min-width:0}
+.tx-label{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-meta{font-size:10px;color:var(--muted);margin-top:2px}
+.tx-amt{font-family:var(--mono);font-size:14px;font-weight:700;flex-shrink:0}
+.tx-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 8px;flex-shrink:0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 14px;background:var(--surf2);border-radius:8px;margin-bottom:8px;font-size:10px;color:var(--dim)}
+.legend span{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.proj-outer{width:100%;overflow:auto;-webkit-overflow-scrolling:touch;height:calc(100vh - 114px);border-radius:8px;border:1px solid var(--bdr)}
+.proj-outer table{width:100%;border-collapse:collapse;min-width:700px;font-size:11px}
+.proj-outer thead tr th{position:sticky;top:0;z-index:20;background:var(--surf2);color:var(--muted);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:9px 7px;text-align:right;border-bottom:2px solid var(--bdr);white-space:nowrap;box-shadow:0 2px 0 var(--bdr)}
+.proj-outer thead th:first-child{text-align:left;min-width:58px}
+.proj-outer thead th:nth-child(2){text-align:left;min-width:28px}
+.proj-outer thead th:nth-child(3){text-align:left}
+.proj-outer td{padding:5px 7px;text-align:right;border-bottom:1px solid rgba(46,50,71,.4);font-family:var(--mono);white-space:nowrap;vertical-align:top}
+.proj-outer td:first-child{font-family:var(--sans);color:var(--dim);text-align:left;font-size:10px}
+.proj-outer td:nth-child(2){text-align:center;font-family:var(--sans);font-size:13px}
+.proj-outer td:nth-child(3){font-family:var(--sans);text-align:left;min-width:180px;max-width:280px;white-space:normal;word-break:break-word;line-height:1.4}
+.proj-outer td:nth-child(4){color:var(--green)}
+.proj-outer td:nth-child(5){color:var(--blue)}
+.proj-outer td:nth-child(6){color:var(--gold)}
+.proj-outer td:nth-child(7){color:var(--purple)}
+.proj-outer td:nth-child(8){color:var(--red)}
+.proj-outer td:nth-child(9){color:var(--dim)}
+.proj-outer td:nth-child(10){color:#93c5fd}
+tr.quiet{opacity:.5}
+tr.paycheck{background:rgba(34,197,94,.08)}
+tr.paycheck td:nth-child(3){color:var(--green);font-weight:600}
+tr.third{background:rgba(34,197,94,.15)}
+tr.third td:nth-child(3){color:var(--green);font-weight:700}
+tr.manual{background:rgba(251,191,36,.06)}
+tr.manual td:nth-child(3){color:var(--gold)}
+tr.autopay td{opacity:.75}
+tr.ccclose td{opacity:.6;font-style:italic}
+tr.warn{background:rgba(248,113,113,.09)}
+tr.warn td:nth-child(3){color:var(--red)}
+tr.lump{background:rgba(167,139,250,.1)}
+tr.lump td:nth-child(3){color:var(--purple);font-weight:600}
+tr.sweep{background:rgba(34,197,94,.13)}
+tr.sweep td:nth-child(3){color:var(--green);font-weight:700}
+tr.special{background:rgba(251,191,36,.09)}
+tr.special td:nth-child(3){color:var(--gold);font-weight:600}
+tr.xmas{background:rgba(251,113,36,.09)}
+tr.xmas td:nth-child(3){color:var(--orange);font-weight:600}
+tr.custom{background:rgba(96,165,250,.1)}
+tr.custom td:nth-child(3){color:var(--blue);font-weight:700}
+tr.transfer{background:rgba(96,165,250,.07)}
+tr.transfer td:nth-child(3){color:var(--blue);font-style:italic}
+tr.bill-override{background:rgba(251,191,36,.07)}
+tr.bill-override td:nth-child(3){color:var(--gold)}
+tr.mhdr td{background:var(--surf2)!important;color:var(--muted)!important;font-size:9px!important;font-weight:700!important;text-transform:uppercase!important;font-family:var(--sans)!important;padding:5px 7px!important;text-align:left!important;opacity:1!important}
+tr.actual-row td{box-shadow:inset 2px 0 0 var(--green)}
+tr.today-row td:first-child{color:var(--green)!important;font-weight:700!important}
+.sr{border-radius:10px;padding:14px;text-align:center;margin-bottom:12px}
+.sr.yes{background:var(--gbg);border:1px solid var(--gdim);color:var(--green)}
+.sr.no{background:var(--surf2);border:1px solid var(--bdr);color:var(--dim)}
+.sr .rl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:4px}
+.sr .rv{font-size:24px;font-weight:800;font-family:var(--mono)}
+.sr .rs{font-size:11px;opacity:.7;margin-top:4px}
+.warn-b{background:var(--rbg);border:1px solid var(--rdim);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:12px;color:var(--red);display:flex;gap:8px;line-height:1.5}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;align-items:flex-end;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--bdr);border-radius:16px 16px 0 0;padding:20px 16px 40px;width:100%;max-width:500px;max-height:92vh;overflow-y:auto}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.tab-row{display:flex;gap:6px;margin-bottom:16px}
+.tab-btn{flex:1;padding:9px 6px;border-radius:8px;border:1px solid var(--bdr);background:var(--surf2);color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);text-align:center}
+.tab-btn.active{background:var(--gbg);border-color:var(--gdim);color:var(--green)}
+.vrow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr)}
+.vrow:last-child{border-bottom:none}
+.vrow .vn{font-size:13px;font-weight:600}
+.vrow .va{font-size:14px;font-weight:700;font-family:var(--mono)}
+.sg{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.sg-t{background:var(--surf2);padding:10px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--bdr)}
+.sr2{padding:12px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sr2:last-child{border-bottom:none}
+.sr2 .sl{font-size:13px;flex:1}
+.sr2 .ss{font-size:10px;color:var(--muted);margin-top:2px}
+.sr2 input{width:120px;text-align:right;flex-shrink:0;padding:7px 10px;font-size:13px;font-family:var(--mono)}
+.divider{border:none;border-top:1px solid var(--bdr);margin:12px 0}
+.safe{height:max(20px,env(safe-area-inset-bottom))}
+.badge{display:inline-block;background:var(--gbg);border:1px solid var(--gdim);color:var(--green);font-size:8px;font-weight:700;border-radius:3px;padding:1px 4px;margin-left:4px;vertical-align:middle;text-transform:uppercase}
+.hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;padding:8px 10px;background:var(--surf2);border-radius:6px}
+.dir-btns{display:flex;gap:6px;margin-bottom:6px}
+.dir-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--bdr);background:var(--surf2);color:var(--dim);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans);text-align:center}
+.dir-btn.on-out{background:var(--rbg);border-color:var(--rdim);color:var(--red)}
+.dir-btn.on-in{background:var(--gbg);border-color:var(--gdim);color:var(--green)}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-title">FinPlan</div>
+  <button class="active" onclick="showPage('dashboard',this)">Dashboard</button>
+  <button onclick="showPage('projection',this)">Projection</button>
+  <button onclick="showPage('sweep',this)">21st Rule</button>
+  <button onclick="showPage('settings',this)">Settings</button>
+</nav>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="datebar">
+    <div><div class="dl">Viewing balances as of</div><div class="dv" id="dd-date">—</div></div>
+    <button onclick="openModal('m-date')">Change Date</button>
+  </div>
+  <div id="dd-warn"></div>
+  <div class="grid2" id="dd-tiles"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+    <button class="btn sec" onclick="openActual()">✏️ Enter Actuals</button>
+    <button class="btn orange" onclick="openTxModal()">＋ Add Transaction</button>
+  </div>
+  <div id="dd-tx-card" style="display:none" class="card">
+    <div class="card-title">Transactions on This Date <span id="dd-tx-count"></span></div>
+    <div id="dd-tx-list"></div>
+  </div>
+  <div id="dd-bo-card" style="display:none" class="card">
+    <div class="card-title">Active Bill Overrides</div>
+    <div id="dd-bo-list"></div>
+    <button class="btn orange" style="margin-top:10px;font-size:12px;padding:8px" onclick="openTxModal('override')">⚙️ Change a Bill Amount</button>
+  </div>
+  <div class="card"><div class="card-title">Manual Payments This Month</div><div id="dd-pmts"></div></div>
+  <div class="card"><div class="card-title">Sweep Status — 21st Rule</div><div id="dd-sweep"></div></div>
+  <div class="safe"></div>
+</div>
+
+<!-- PROJECTION -->
+<div id="page-projection" class="page" style="padding:8px 0 0 0">
+  <div class="legend" style="margin:0 8px 6px;border-radius:6px">
+    <span>💰 Paycheck</span><span>✍️ Manual</span><span>🔄 Auto-pay</span>
+    <span>🏦 Mortgage</span><span>💳 CC</span><span>🎯 Lump</span>
+    <span>⚡ Sweep</span><span>📝 Custom</span><span>⚙️ Bill change</span>
+  </div>
+  <div class="proj-outer" style="margin:0 8px">
+    <table>
+      <thead><tr>
+        <th>Date</th><th></th><th>Event</th>
+        <th>Bill Pay</th><th>Spending</th><th>Nest Egg</th>
+        <th>Goals Fund</th><th>Equity</th><th>Truck</th><th>Mortgage</th>
+      </tr></thead>
+      <tbody id="proj-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SWEEP -->
+<div id="page-sweep" class="page">
+  <div class="card">
+    <div class="card-title">21st Rule — Sweep Calculator</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Check on the 21st every month. Enter one number — everything calculates.</p>
+    <div class="field"><label>Bill Pay Balance on the 21st</label>
+      <input type="number" id="sw-bp" placeholder="e.g. 3200.00" step="0.01" oninput="calcSweep()" style="font-size:20px;font-family:var(--mono);font-weight:700">
+    </div>
+    <div class="field"><label>Month Type</label>
+      <select id="sw-type" onchange="calcSweep()">
+        <option value="normal">Normal month — $870 CC reserve</option>
+        <option value="quarter">Quarter month — Sep/Dec/Mar/Jun — $934.42</option>
+      </select>
+    </div>
+  </div>
+  <div id="sw-result"></div>
+  <div id="sw-dist" style="display:none" class="card">
+    <div class="card-title">Distribution from Bill Pay</div>
+    <div class="vrow"><div><div class="vn" style="color:var(--blue)">→ Spending Account</div></div><div class="va" style="color:var(--blue)" id="sw-s">—</div></div>
+    <div class="vrow"><div><div class="vn" style="color:var(--gold)">→ Nest Egg</div></div><div class="va" style="color:var(--gold)" id="sw-n">—</div></div>
+    <div class="vrow"><div><div class="vn" style="color:var(--purple)">→ Goals Fund</div></div><div class="va" style="color:var(--purple)" id="sw-g">—</div></div>
+    <hr class="divider">
+    <div class="vrow"><div><div class="vn">Total from Bill Pay</div></div><div class="va" id="sw-tot">—</div></div>
+    <div class="vrow"><div><div class="vn">Bill Pay after sweep</div></div><div class="va" id="sw-aft">—</div></div>
+  </div>
+  <div class="card"><div class="card-title">After a Sweep</div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6">Go to Dashboard → Enter Actuals for the sweep date. Update Bill Pay, Spending, Nest Egg, and Goals Fund with real post-sweep balances.</p>
+  </div>
+  <div class="safe"></div>
+</div>
+
+<!-- SETTINGS -->
+<div id="page-settings" class="page">
+  <div class="sg"><div class="sg-t">Income & Auto-Transfers (per paycheck)</div>
+    <div class="sr2"><div><div class="sl">Bi-weekly paycheck (net)</div></div><input type="number" id="s-pc" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">Net to Bill Pay per check</div><div class="ss">Paycheck minus all transfers</div></div><input type="number" id="s-bppc" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">→ Spending Account</div></div><input type="number" id="s-sppc" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">→ Nest Egg</div></div><input type="number" id="s-nepc" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">→ Goals Fund</div></div><input type="number" id="s-gfpc" step="0.01"></div>
+  </div>
+  <div class="sg"><div class="sg-t">Default Bill Amounts</div>
+    <div class="sr2"><div><div class="sl">Mortgage payment</div><div class="ss">Manual — 1st check near 15th</div></div><input type="number" id="s-mo" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">Equity line payment</div><div class="ss">AUTO — 25th each month</div></div><input type="number" id="s-ep" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">Truck loan payment</div><div class="ss">AUTO — 25th each month</div></div><input type="number" id="s-tp" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">Child support</div><div class="ss">Manual — 1st each month</div></div><input type="number" id="s-cs" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">CC — normal month</div><div class="ss">Manual — by 3rd, due 5th, closes 8th</div></div><input type="number" id="s-ccn" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">CC — quarter month</div><div class="ss">Sep/Dec/Mar/Jun — incl. garbage $64.44</div></div><input type="number" id="s-ccq" step="0.01"></div>
+  </div>
+  <div class="sg"><div class="sg-t">Debt Rates (annual decimal: 4.5% = 0.045)</div>
+    <div class="sr2"><div><div class="sl">Equity line rate</div></div><input type="number" id="s-er" step="0.0001"></div>
+    <div class="sr2"><div><div class="sl">Truck loan rate</div></div><input type="number" id="s-tr" step="0.0001"></div>
+    <div class="sr2"><div><div class="sl">Mortgage rate</div></div><input type="number" id="s-mr" step="0.0001"></div>
+  </div>
+  <div class="sg"><div class="sg-t">Sweep Settings</div>
+    <div class="sr2"><div><div class="sl">Bill Pay floor</div></div><input type="number" id="s-fl" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">Sweep threshold</div></div><input type="number" id="s-st" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">Sweep → Spending</div></div><input type="number" id="s-ss" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">Sweep → Nest Egg</div></div><input type="number" id="s-sn" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">Sweep → Goals Fund</div></div><input type="number" id="s-sg" step="0.01"></div>
+  </div>
+  <div class="sg"><div class="sg-t">Goals Fund & Feb Bonus</div>
+    <div class="sr2"><div><div class="sl">Lump sum threshold</div></div><input type="number" id="s-lt" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">February bonus (net)</div></div><input type="number" id="s-bn" step="0.01"></div>
+    <div class="sr2"><div><div class="sl">Bonus % to equity (e.g. 0.75)</div></div><input type="number" id="s-bp2" step="0.01"></div>
+  </div>
+  <button class="btn" onclick="saveSettings()" style="margin-bottom:8px">Save Settings</button>
+  <button class="btn danger" onclick="resetDefaults()" style="margin-bottom:20px">Reset to Original Plan</button>
+  <p style="font-size:11px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:16px">iPhone: Download → Safari → Share → Add to Home Screen</p>
+  <div class="safe"></div>
+</div>
+
+<!-- DATE MODAL -->
+<div class="modal-ov" id="m-date">
+  <div class="modal">
+    <h2>Change Dashboard Date</h2>
+    <div class="modal-sub">Projection shows every day for 12 months from this date.</div>
+    <div class="field"><label>Date</label><input type="date" id="date-inp"></div>
+    <button class="btn" onclick="applyDate()" style="margin-bottom:8px">View This Date</button>
+    <button class="btn sec" onclick="closeModal('m-date')">Cancel</button>
+  </div>
+</div>
+
+<!-- ACTUAL MODAL -->
+<div class="modal-ov" id="m-actual">
+  <div class="modal">
+    <h2>Enter Actual Balances</h2>
+    <div class="modal-sub" id="act-sub"></div>
+    <div id="act-fields"></div>
+    <button class="btn" onclick="saveActuals()" style="margin-bottom:8px;margin-top:8px">Save</button>
+    <button class="btn sec" onclick="closeModal('m-actual')">Cancel</button>
+  </div>
+</div>
+
+<!-- TRANSACTION MODAL -->
+<div class="modal-ov" id="m-tx">
+  <div class="modal">
+    <h2>Add Transaction</h2>
+    <div class="modal-sub">Add a one-time or recurring transaction, or change a bill amount. The projection updates immediately.</div>
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-custom" onclick="setTxMode('custom')">📝 Transaction</button>
+      <button class="tab-btn" id="tab-transfer" onclick="setTxMode('transfer')">↔️ Transfer</button>
+      <button class="tab-btn" id="tab-override" onclick="setTxMode('override')">⚙️ Bill Change</button>
+    </div>
+
+    <!-- CUSTOM TX -->
+    <div id="tx-custom-fields">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="tx-date">
+      </div>
+      <div class="field">
+        <label>Direction</label>
+        <div class="dir-btns">
+          <button class="dir-btn on-out" id="dir-out" onclick="setDir('out')">− Money Out</button>
+          <button class="dir-btn" id="dir-in" onclick="setDir('in')">+ Money In</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Account</label>
+        <select id="tx-account">
+          <option value="bp">Bill Pay (primary checking)</option>
+          <option value="sp">Spending Account</option>
+          <option value="ne">Nest Egg</option>
+          <option value="gf">Goals Fund</option>
+          <option value="eq">Equity Line</option>
+          <option value="tr">Truck Loan</option>
+          <option value="mo">Mortgage</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Amount (enter positive number)</label>
+        <input type="number" id="tx-amount" placeholder="0.00" step="0.01" min="0.01">
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <input type="text" id="tx-label" placeholder="e.g. CC payoff balance, Unexpected repair">
+      </div>
+      <div class="field">
+        <label>Frequency</label>
+        <select id="tx-freq" onchange="updateFreqHint()">
+          <option value="once">One-time — happens once on this date</option>
+          <option value="monthly">Monthly — repeats same day each month</option>
+          <option value="biweekly">Every 2 weeks — repeats from this date</option>
+        </select>
+        <div class="hint" id="tx-freq-hint">This transaction will appear once on the selected date and cascade the projection forward.</div>
+      </div>
+    </div>
+
+    <!-- TRANSFER -->
+    <div id="tx-transfer-fields" style="display:none">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="tr-date">
+      </div>
+      <div class="field">
+        <label>From Account</label>
+        <select id="tr-from">
+          <option value="bp">Bill Pay (primary checking)</option>
+          <option value="sp">Spending Account</option>
+          <option value="ne">Nest Egg</option>
+          <option value="gf">Goals Fund</option>
+          <option value="eq">Equity Line</option>
+          <option value="tr">Truck Loan</option>
+          <option value="mo">Mortgage</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>To Account</label>
+        <select id="tr-to">
+          <option value="sp">Spending Account</option>
+          <option value="bp">Bill Pay (primary checking)</option>
+          <option value="ne">Nest Egg</option>
+          <option value="gf">Goals Fund</option>
+          <option value="eq">Equity Line</option>
+          <option value="tr">Truck Loan</option>
+          <option value="mo">Mortgage</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Amount</label>
+        <input type="number" id="tr-amount" placeholder="0.00" step="0.01" min="0.01">
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <input type="text" id="tr-label" placeholder="e.g. Move to Nest Egg, Equity lump sum">
+      </div>
+      <div class="field">
+        <label>Frequency</label>
+        <select id="tr-freq" onchange="updateTrFreqHint()">
+          <option value="once">One-time</option>
+          <option value="monthly">Monthly — repeats same day each month</option>
+          <option value="biweekly">Every 2 weeks</option>
+        </select>
+        <div class="hint" id="tr-freq-hint">This transfer happens once on the selected date.</div>
+      </div>
+    </div>
+
+    <!-- BILL OVERRIDE -->
+    <div id="tx-override-fields" style="display:none">
+      <div class="field">
+        <label>Which Bill to Change</label>
+        <select id="bo-bill" onchange="updateBoHint()">
+          <option value="ccn">Credit Card — Normal Month (Jan/Feb/Apr/May/Jul/Aug/Oct/Nov)</option>
+          <option value="ccq">Credit Card — Quarter Month (Mar/Jun/Sep/Dec — includes garbage)</option>
+          <option value="mo">Mortgage — manual payment near 15th</option>
+          <option value="ep">Equity Line — AUTO 25th</option>
+          <option value="tp">Truck Loan — AUTO 25th</option>
+          <option value="cs">Child Support — manual 1st</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>New Amount</label>
+        <input type="number" id="bo-amount" placeholder="e.g. 1529.01" step="0.01" min="0.01">
+        <div class="hint" id="bo-hint">Enter the new amount for this bill.</div>
+      </div>
+      <div class="field">
+        <label>Effective From Date</label>
+        <input type="date" id="bo-from" onchange="autoSelectCCType()">
+        <div class="hint" id="bo-month-hint"></div>
+      </div>
+      <div class="field">
+        <label>Last Active Date (leave blank = permanent)</label>
+        <input type="date" id="bo-until">
+        <div class="hint">The override is active through and including this date, then reverts to the default. Leave blank to change permanently.</div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="saveTx()" style="margin-bottom:8px">Save — Update Projection</button>
+    <button class="btn sec" onclick="closeModal('m-tx')">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// CONSTANTS & STATE
+// ════════════════════════════════════════
+const DEF={
+  pc:2381.81,bppc:1556.81,sppc:525,nepc:150,gfpc:150,
+  mo:1144.52,ep:384,tp:350,cs:278,ccn:870,ccq:934.42,
+  er:0.045,tr:0.0399,mr:0.03875,
+  fl:1000,st:2500,ss:400,sn:600,sg:700,
+  lt:1500,bn:2394,bp2:0.75
+};
+// Verified Aug 6 2026 — after paycheck+transfers already fired. Next paycheck: Aug 20.
+const START={date:'2026-08-06',bp:1971.14,sp:475,ne:450,gf:150,eq:60000,tr:21614.36,mo:116886.37};
+
+let S={...DEF};
+let dashDate=START.date;
+let actuals={};     // {dateStr:{bp,sp,ne,gf,eq,tr,mo}}
+let customTx=[];    // [{id,date,account,amount,label,freq}]
+let billOvr=[];     // [{id,fromDate,untilDate,bill,amount}]
+
+// ════════════════════════════════════════
+// STORAGE
+// ════════════════════════════════════════
+function persist(){
+  try{localStorage.setItem('fp_s',JSON.stringify(S));}catch(e){}
+  try{localStorage.setItem('fp_d',dashDate);}catch(e){}
+  try{localStorage.setItem('fp_a',JSON.stringify(actuals));}catch(e){}
+  try{localStorage.setItem('fp_tx',JSON.stringify(customTx));}catch(e){}
+  try{localStorage.setItem('fp_bo',JSON.stringify(billOvr));}catch(e){}
+}
+function hydrate(){
+  try{const v=localStorage.getItem('fp_s');if(v)S={...DEF,...JSON.parse(v)};}catch(e){}
+  try{const v=localStorage.getItem('fp_d');if(v)dashDate=v;}catch(e){}
+  try{const v=localStorage.getItem('fp_a');if(v)actuals=JSON.parse(v);}catch(e){}
+  try{const v=localStorage.getItem('fp_tx');if(v){const p=JSON.parse(v);customTx=Array.isArray(p)?p:[];}}catch(e){}
+  try{const v=localStorage.getItem('fp_bo');if(v){const p=JSON.parse(v);billOvr=Array.isArray(p)?p:[];}}catch(e){}
+}
+
+// ════════════════════════════════════════
+// UTILITIES
+// ════════════════════════════════════════
+const $c=n=>(n==null||isNaN(n))?'—':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
+const pad=n=>String(n).padStart(2,'0');
+const isQ=ds=>[3,6,9,12].includes(+ds.slice(5,7));
+const uid=()=>Math.random().toString(36).slice(2,9);
+
+function addDays(ds,n){
+  const d=new Date(ds+'T12:00:00Z');
+  d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+function addMonths(ds,n){
+  const d=new Date(ds+'T12:00:00Z');
+  d.setUTCMonth(d.getUTCMonth()+n);
+  return d.toISOString().slice(0,10);
+}
+function fmtShort(ds){
+  if(!ds||!ds.includes('-'))return ds||'';
+  const[,m,d]=ds.split('-').map(Number);
+  return['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m]+' '+d;
+}
+function fmtLong(ds){
+  if(!ds||!ds.includes('-'))return ds||'';
+  const[y,m,d]=ds.split('-').map(Number);
+  return['','January','February','March','April','May','June','July','August','September','October','November','December'][m]+' '+d+', '+y;
+}
+function dayName(ds){
+  return['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(ds+'T12:00:00Z').getUTCDay()];
+}
+
+// Get active bill override amount for a key on a date (null = use default)
+function getOvr(bill,ds){
+  if(!billOvr.length)return null;
+  const matches=billOvr
+    .filter(o=>o.bill===bill&&o.fromDate<=ds&&(!o.untilDate||o.untilDate>=ds))
+    .sort((a,b)=>b.fromDate.localeCompare(a.fromDate));
+  return matches.length?matches[0].amount:null;
+}
+function effAmt(key,ds){
+  const ov=getOvr(key,ds);
+  return ov!==null?ov:S[key];
+}
+
+// ════════════════════════════════════════
+// PAYCHECK SCHEDULE
+// Anchor: Aug 20 2026 (Aug 6 already processed)
+// Every 14 days from Aug 20
+// ════════════════════════════════════════
+function buildPcSet(toDs){
+  const anchor=new Date('2026-08-20T12:00:00Z');
+  const to=new Date(toDs+'T12:00:00Z');
+  const set=new Set();
+  let d=new Date(anchor);
+  while(d<=to){set.add(d.toISOString().slice(0,10));d=new Date(d.getTime()+14*86400000);}
+  return set;
+}
+
+// ════════════════════════════════════════
+// SIMULATION ENGINE
+// Walks every calendar day from START.date through toDs.
+// Returns Map<dateStr, {bp,sp,ne,gf,eq,tr,mo,events,hasActual}>
+// Bill amounts are looked up per-date so overrides work correctly.
+// customTx fns are rebuilt from stored data — not serialized.
+// ════════════════════════════════════════
+function simulate(toDs){
+  // Running balances
+  let b={bp:START.bp,sp:START.sp,ne:START.ne,gf:START.gf,eq:START.eq,tr:START.tr,mo:START.mo};
+
+  // Event map: date → sorted array of events
+  // Each event: {pri, icon, label, flag, fn(b,date)}
+  // fn is always a fresh closure — never serialized
+  const evtMap={};
+  function addE(date,evt){
+    if(date<START.date||date>toDs)return;
+    if(!evtMap[date])evtMap[date]=[];
+    evtMap[date].push(evt);
+  }
+
+  // ── Monthly recurring events ───────────────────────────────────────
+  // Generate for every month from the start month through toDs+2 months
+  {
+    let cy=+START.date.slice(0,4);
+    let cm=+START.date.slice(5,7);
+    const endBuf=addMonths(toDs,2);
+    while(true){
+      const ym=`${cy}-${pad(cm)}`;
+      if(`${ym}-01`>endBuf)break;
+
+      const monthCopy=cm; // capture for closures
+      const yearCopy=cy;
+      const isQM=[3,6,9,12].includes(monthCopy);
+      const isFeb=monthCopy===2;
+      const isNov=monthCopy===11;
+      const nextMo=monthCopy===12?1:monthCopy+1;
+      const d01=`${ym}-01`;
+      const d03=`${ym}-03`;
+      const d08=`${ym}-08`;
+      const d15=`${ym}-15`;
+      const d25=`${ym}-25`;
+      const d26=`${ym}-26`;
+
+      // Child support — 1st
+      addE(d01,{pri:2,icon:'✍️',label:'Child support · Manual from Bill Pay',flag:'manual',
+        dynLabel:(ds)=>{
+          const ovr=getOvr('cs',ds);
+          return '✍️ Child support'+(ovr!==null?' ⚙️ '+$c(ovr):' '+$c(S.cs))+' · Manual from Bill Pay';
+        },
+        fn(b,ds){b.bp-=effAmt('cs',ds);}});
+
+      // CC payment — 3rd (use ccn or ccq based on THIS month, looked up per-date for overrides)
+      const ccKey=isQM?'ccq':'ccn';
+      addE(d03,{pri:2,icon:'💳',
+        label:'CC payment'+(isQM?' (quarter⚠)':'')+' · Manual — due 5th',
+        flag:isQM?'warn':'manual',
+        dynLabel:(ds)=>{
+          const ovr=getOvr(ccKey,ds);
+          return '💳 CC payment'+(isQM?' (quarter⚠)':'')+(ovr!==null?' ⚙️ '+$c(ovr):' '+$c(S[ccKey]))+' · due 5th';
+        },
+        fn(b,ds){b.bp-=effAmt(ccKey,ds);}});
+
+      // CC closes — 8th
+      addE(d08,{pri:9,icon:'📅',label:'CC closes · stmt due '+pad(nextMo)+'/05',flag:'ccclose',fn(){}});
+
+      // Equity auto-pay — 25th
+      addE(d25,{pri:3,icon:'🔄',label:'Equity auto-pay · AUTO fires 25th',flag:'autopay',
+        dynLabel:(ds)=>{
+          const ovr=getOvr('ep',ds);
+          return '🔄 Equity auto-pay'+(ovr!==null?' ⚙️ '+$c(ovr):' '+$c(S.ep))+' · AUTO 25th';
+        },
+        fn(b,ds){
+          const pmt=effAmt('ep',ds);
+          const interest=b.eq*(S.er/12);
+          const principal=Math.max(0,pmt-interest);
+          b.eq=Math.max(0,b.eq-principal);
+          b.bp-=pmt;
+        }});
+
+      // Truck auto-pay — 25th
+      addE(d25,{pri:3,icon:'🔄',label:'Truck auto-pay · AUTO fires 25th',flag:'autopay',
+        dynLabel:(ds)=>{
+          const ovr=getOvr('tp',ds);
+          return '🔄 Truck auto-pay'+(ovr!==null?' ⚙️ '+$c(ovr):' '+$c(S.tp))+' · AUTO 25th';
+        },
+        fn(b,ds){
+          const pmt=effAmt('tp',ds);
+          const interest=b.tr*(S.tr/12);
+          const principal=Math.max(0,pmt-interest);
+          b.tr=Math.max(0,b.tr-principal);
+          b.bp-=pmt;
+        }});
+
+      // Nov 26 Christmas
+      if(isNov){
+        addE(d26,{pri:5,icon:'🎄',label:'Christmas $500 · gift shopping budget',flag:'xmas',
+          fn(b){b.bp-=500;}});
+      }
+
+      // Feb 15 bonus
+      if(isFeb){
+        addE(d15,{pri:2,icon:'🎯',label:'Feb bonus '+$c(S.bn*S.bp2)+' → equity principal',flag:'special',
+          fn(b){b.eq=Math.max(0,b.eq-S.bn*S.bp2);}});
+      }
+
+      // Advance month
+      cm++;if(cm>12){cm=1;cy++;}
+    }
+  }
+
+  // ── Paychecks + Mortgage ──────────────────────────────────────────
+  const pcSet=buildPcSet(toDs);
+  // Count per month for 3rd-paycheck detection
+  const pcByMo={};
+  pcSet.forEach(ds=>{const ym=ds.slice(0,7);if(!pcByMo[ym])pcByMo[ym]=[];pcByMo[ym].push(ds);});
+  Object.values(pcByMo).forEach(arr=>arr.sort());
+
+  pcSet.forEach(ds=>{
+    const ym=ds.slice(0,7);
+    const monthPCs=pcByMo[ym];
+    const idx=monthPCs.indexOf(ds);
+    const isThird=idx===2&&monthPCs.length>=3;
+    const dd=+ds.slice(8,10);
+
+    addE(ds,{pri:0,icon:'💰',
+      label:(isThird?'⭐ 3rd Paycheck':'Paycheck')+' · Bill Pay +'+$c(S.bppc)+' · Sp+'+$c(S.sppc)+' · NE+'+$c(S.nepc)+' · GF+'+$c(S.gfpc),
+      flag:isThird?'third':'paycheck',isPC:true,
+      fn(b){b.bp+=S.bppc;b.sp+=S.sppc;b.ne+=S.nepc;b.gf+=S.gfpc;}});
+
+    // Mortgage with first-half-month paycheck
+    if(dd>=1&&dd<=15){
+      addE(ds,{pri:1,icon:'🏦',label:'Mortgage · Manual — pay with this check',flag:'manual',
+        dynLabel:(ds)=>{
+          const ovr=getOvr('mo',ds);
+          return '🏦 Mortgage'+(ovr!==null?' ⚙️ '+$c(ovr):' '+$c(S.mo))+' · Manual — pay with this check';
+        },
+        fn(b,ds){
+          const pmt=effAmt('mo',ds);
+          const interest=b.mo*(S.mr/12);
+          const principal=Math.max(0,pmt-interest);
+          b.mo=Math.max(0,b.mo-principal);
+          b.bp-=pmt;
+        }});
+    }
+  });
+
+  // ── Custom transactions ───────────────────────────────────────────
+  // fn is rebuilt fresh each simulation from the stored data
+  // This ensures it works correctly after hydrate() from localStorage
+  customTx.forEach(function(tx){
+    // Expand dates based on frequency
+    const txDates=[];
+    if(tx.freq==='once'){
+      txDates.push(tx.date);
+    }else if(tx.freq==='monthly'){
+      let cur=tx.date;
+      const limit=20; // safety cap
+      for(let i=0;i<limit&&cur<=toDs;i++){txDates.push(cur);cur=addMonths(cur,1);}
+    }else if(tx.freq==='biweekly'){
+      let cur=tx.date;
+      const limit=30;
+      for(let i=0;i<limit&&cur<=toDs;i++){txDates.push(cur);cur=addDays(cur,14);}
+    }
+
+    // Capture tx fields explicitly — do NOT reference tx inside fn (closure safety)
+    const acct=String(tx.account);
+    const amt=Number(tx.amount);
+    const lbl=String(tx.label||'Custom transaction');
+    const txId=String(tx.id);
+
+    txDates.forEach(function(ds){
+      if(ds<START.date||ds>toDs)return;
+      const isTransfer=lbl.startsWith('↔️');
+      addE(ds,{
+        pri:6, // runs after all scheduled events
+        icon:isTransfer?'↔️':'📝',
+        label:isTransfer?lbl:lbl+(amt<0?' −'+$c(Math.abs(amt)):' +'+$c(amt)),
+        flag:isTransfer?'transfer':'custom',
+        txId:txId,
+        fn:function(b){ b[acct]=(b[acct]||0)+amt; }
+      });
+    });
+  });
+
+  // ── Bill override announcements ───────────────────────────────────
+  const billNames={ccn:'CC Normal',ccq:'CC Quarter',mo:'Mortgage',ep:'Equity Pmt',tp:'Truck Pmt',cs:'Child Support'};
+  billOvr.forEach(function(bo){
+    const bname=billNames[bo.bill]||bo.bill;
+    const boAmt=Number(bo.amount);
+    const boUntil=bo.untilDate;
+    addE(bo.fromDate,{pri:1,icon:'⚙️',
+      label:'Bill change: '+bname+' → '+$c(boAmt)+(boUntil?' (until '+fmtShort(boUntil)+')':' (permanent)'),
+      flag:'bill-override',
+      fn:function(){}  // announcement only — no balance change
+    });
+  });
+
+  // ── Walk every calendar day ───────────────────────────────────────
+  const dayMap=new Map();
+  const lumpDone={};
+  const sweepDone={};
+  let cur=START.date;
+
+  while(cur<=toDs){
+    // Get events for this day, sorted by priority
+    const dayEvts=(evtMap[cur]||[]).slice().sort((a,z)=>(a.pri||0)-(z.pri||0));
+    const rowEvents=[];
+
+    dayEvts.forEach(function(evt){
+      evt.fn(b,cur);
+
+      // After paycheck: check lump sum and sweep
+      if(evt.isPC){
+        // Goals Fund lump sum → equity
+        if(b.gf>=S.lt&&b.eq>0&&!lumpDone[cur]){
+          const lump=Math.min(Math.floor(b.gf/500)*500,b.eq);
+          if(lump>0){
+            b.gf-=lump;
+            b.eq=Math.max(0,b.eq-lump);
+            lumpDone[cur]=true;
+            rowEvents.push({icon:'🎯',label:'Goals Fund lump sum '+$c(lump)+' → equity principal',flag:'lump'});
+          }
+        }
+        // Sweep — block Dec late paychecks (Jan 3 quarter CC would breach floor)
+        const dd=+cur.slice(8,10);
+        const mo=+cur.slice(5,7);
+        if(dd>=18&&!sweepDone[cur]&&!(mo===12&&dd>=18)){
+          const ccR=isQ(cur)?effAmt('ccq',cur):effAmt('ccn',cur);
+          const te=b.bp-S.fl-ccR;
+          if(te>=S.st){
+            b.bp-=(S.ss+S.sn+S.sg);
+            b.sp+=S.ss;b.ne+=S.sn;b.gf+=S.sg;
+            sweepDone[cur]=true;
+            rowEvents.push({icon:'⚡',label:'⚡ Sweep — excess '+$c(te)+' → Sp+'+$c(S.ss)+' NE+'+$c(S.sn)+' GF+'+$c(S.sg),flag:'sweep'});
+          }
+        }
+      }
+
+      rowEvents.push({icon:evt.icon,label:evt.dynLabel?evt.dynLabel(cur):evt.label,flag:evt.flag,txId:evt.txId||null});
+    });
+
+    // Apply actual override — snaps balance, all subsequent days cascade from here
+    const hasActual=!!actuals[cur];
+    if(hasActual){
+      const a=actuals[cur];
+      ['bp','sp','ne','gf','eq','tr','mo'].forEach(k=>{
+        if(a[k]!==undefined&&a[k]!==''&&a[k]!==null)b[k]=parseFloat(a[k]);
+      });
+    }
+
+    dayMap.set(cur,{
+      bp:b.bp,sp:b.sp,ne:b.ne,gf:b.gf,eq:b.eq,tr:b.tr,mo:b.mo,
+      events:rowEvents,hasActual:hasActual
+    });
+
+    cur=addDays(cur,1);
+  }
+
+  return dayMap;
+}
+
+// Get balances for a specific date (all events on that day fully applied)
+function balAt(ds){
+  // Simulate through the day after ds so all of ds's events are processed
+  const map=simulate(addDays(ds,1));
+  const row=map.get(ds);
+  if(row)return{bp:row.bp,sp:row.sp,ne:row.ne,gf:row.gf,eq:row.eq,tr:row.tr,mo:row.mo};
+  return{bp:START.bp,sp:START.sp,ne:START.ne,gf:START.gf,eq:START.eq,tr:START.tr,mo:START.mo};
+}
+
+// ════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════
+function renderDash(){
+  try{
+    document.getElementById('dd-date').textContent=fmtLong(dashDate);
+    const bal=balAt(dashDate);
+    const hasAct=!!actuals[dashDate];
+
+    // Equity maturity warning
+    const wEl=document.getElementById('dd-warn');
+    wEl.innerHTML='';
+    if(dashDate<'2028-02-16'){
+      const mo=Math.round((new Date('2028-02-16')-new Date(dashDate))/2628000000);
+      if(mo<=24)wEl.innerHTML=`<div class="warn-b"><span>⚠️</span>
+        <span>Equity line matures <strong>Feb 16, 2028</strong> — ~${mo} months away.
+        Balance: <strong>${$c(bal.eq)}</strong>. Call First Community to discuss options.</span></div>`;
+    }
+
+    // Account tiles
+    document.getElementById('dd-tiles').innerHTML=[
+      {k:'bp',l:'Bill Pay',c:'bp',s:'Primary checking'},
+      {k:'sp',l:'Spending',c:'sp',s:'Day-to-day spending'},
+      {k:'ne',l:'Nest Egg',c:'ne',s:'Emergency fund'},
+      {k:'gf',l:'Goals Fund',c:'gf',s:'Equity lump sums'},
+      {k:'eq',l:'Equity Line',c:'eq wide',s:'Matures Feb 2028 · 4.5% variable'},
+      {k:'tr',l:'Truck Loan',c:'tr',s:'3.99% fixed'},
+      {k:'mo',l:'Mortgage',c:'mo',s:'3.875% fixed'},
+    ].map(t=>`<div class="tile ${t.c}">
+        <div class="tl">${t.l}${hasAct?'<span class="badge">Actual</span>':''}</div>
+        <div class="ta">${$c(bal[t.k])}</div>
+        <div class="ts">${t.s}</div>
+      </div>`).join('');
+
+    // Custom transactions on this date
+    const todayTx=customTx.filter(tx=>{
+      if(tx.freq==='once')return tx.date===dashDate;
+      if(tx.freq==='monthly'){
+        let c=tx.date;
+        for(let i=0;i<60&&c<=dashDate;i++){if(c===dashDate)return true;c=addMonths(c,1);}
+        return false;
+      }
+      if(tx.freq==='biweekly'){
+        let c=tx.date;
+        for(let i=0;i<100&&c<=dashDate;i++){if(c===dashDate)return true;c=addDays(c,14);}
+        return false;
+      }
+      return false;
+    });
+    const txCard=document.getElementById('dd-tx-card');
+    document.getElementById('dd-tx-count').textContent=todayTx.length?`(${todayTx.length})`:'';
+    if(todayTx.length){
+      txCard.style.display='block';
+      document.getElementById('dd-tx-list').innerHTML=todayTx.map(tx=>`
+        <div class="tx-row">
+          <div class="tx-info">
+            <div class="tx-label">📝 ${tx.label||'Custom transaction'}</div>
+            <div class="tx-meta">${['bp','sp','ne','gf','eq','tr','mo'].includes(tx.account)?{bp:'Bill Pay',sp:'Spending',ne:'Nest Egg',gf:'Goals Fund',eq:'Equity',tr:'Truck',mo:'Mortgage'}[tx.account]:tx.account} · ${tx.freq==='once'?'One-time':tx.freq==='monthly'?'Monthly':'Every 2 weeks'}</div>
+          </div>
+          <div class="tx-amt" style="color:${tx.amount<0?'var(--red)':'var(--green)'}">${tx.amount>0?'+':''}${$c(tx.amount)}</div>
+          <button class="tx-del" onclick="deleteTx('${tx.id}')">✕</button>
+        </div>`).join('');
+    }else txCard.style.display='none';
+
+    // Active bill overrides
+    const activeOvr=billOvr.filter(o=>o.fromDate<=dashDate&&(!o.untilDate||o.untilDate>=dashDate));
+    const boCard=document.getElementById('dd-bo-card');
+    if(activeOvr.length){
+      boCard.style.display='block';
+      const bn={ccn:'CC Normal',ccq:'CC Quarter',mo:'Mortgage',ep:'Equity Pmt',tp:'Truck Pmt',cs:'Child Support'};
+      document.getElementById('dd-bo-list').innerHTML=activeOvr.map(o=>`
+        <div class="tx-row">
+          <div class="tx-info">
+            <div class="tx-label">⚙️ ${bn[o.bill]||o.bill}</div>
+            <div class="tx-meta">From ${fmtShort(o.fromDate)}${o.untilDate?' → '+fmtShort(o.untilDate):' · permanent'}</div>
+          </div>
+          <div class="tx-amt" style="color:var(--orange)">${$c(o.amount)}</div>
+          <button class="tx-del" onclick="deleteBo('${o.id}')">✕</button>
+        </div>`).join('');
+    }else boCard.style.display='none';
+
+    // Payments
+    const qM=isQ(dashDate);
+    const ccKey=qM?'ccq':'ccn';
+    const ccAmt=effAmt(ccKey,dashDate);
+    const moAmt=effAmt('mo',dashDate);
+    const ccOvr=getOvr(ccKey,dashDate)!==null;
+    const moOvr=getOvr('mo',dashDate)!==null;
+    document.getElementById('dd-pmts').innerHTML=`
+      <div class="vrow"><div><div class="vn">✍️ Child Support</div><div style="font-size:10px;color:var(--muted)">Manual — 1st from Bill Pay</div></div><div class="va">${$c(effAmt('cs',dashDate))}</div></div>
+      <div class="vrow"><div><div class="vn">🏦 Mortgage${moOvr?' <span style="color:var(--orange);font-size:10px">⚙️</span>':''}</div><div style="font-size:10px;color:var(--muted)">Manual — 1st check near 15th</div></div><div class="va" style="${moOvr?'color:var(--orange)':''}">${$c(moAmt)}</div></div>
+      <div class="vrow"><div><div class="vn">💳 CC${qM?' <span style="color:var(--red);font-size:10px">⚠ Quarter</span>':''}${ccOvr?' <span style="color:var(--orange);font-size:10px">⚙️</span>':''}</div><div style="font-size:10px;color:var(--muted)">Manual — by 3rd · due 5th · closes 8th</div></div><div class="va" style="${ccOvr?'color:var(--orange)':qM?'color:var(--red)':''}">${$c(ccAmt)}</div></div>
+      <div class="vrow"><div><div class="vn">🔄 Equity + Truck</div><div style="font-size:10px;color:var(--muted)">AUTO — fires 25th</div></div><div class="va" style="color:var(--green)">${$c(effAmt('ep',dashDate)+effAmt('tp',dashDate))}</div></div>`;
+
+    // Sweep
+    const ccR=effAmt(ccKey,dashDate);
+    const te=bal.bp-S.fl-ccR;
+    document.getElementById('dd-sweep').innerHTML=`
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;color:var(--muted)">Bill Pay</span><span style="font-family:var(--mono)">${$c(bal.bp)}</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;color:var(--muted)">Minus floor+CC${qM?' ⚠':''}</span><span style="font-family:var(--mono);color:var(--red)">−${$c(S.fl+ccR)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--bdr)"><strong>True Excess</strong><span style="font-family:var(--mono);font-size:15px;font-weight:700;color:${te>=S.st?'var(--green)':'var(--text)'}">${$c(te)}</span></div>
+      </div>
+      ${te>=S.st
+        ?`<div class="sr yes"><div class="rl">Sweep Triggered</div><div class="rv">YES — SWEEP NOW</div><div class="rs">21st Rule tab for details</div></div>`
+        :`<div class="sr no"><div class="rl">Not Yet</div><div class="rv">${$c(S.st-te)} more needed</div><div class="rs">Threshold: ${$c(S.st)}</div></div>`}`;
+  }catch(e){console.error('renderDash error:',e);}
+}
+
+// ════════════════════════════════════════
+// PROJECTION TABLE
+// ════════════════════════════════════════
+function renderProjection(){
+  try{
+    const toDate=new Date(dashDate+'T12:00:00Z');
+    toDate.setMonth(toDate.getMonth()+12);
+    const toDs=toDate.toISOString().slice(0,10);
+    const dayMap=simulate(toDs);
+    const today=new Date().toISOString().slice(0,10);
+    let html='';
+    let lastMo='';
+    dayMap.forEach((row,ds)=>{
+      if(ds<dashDate)return;
+      const mo=ds.slice(0,7);
+      if(mo!==lastMo){
+        lastMo=mo;
+        const[y,m]=mo.split('-').map(Number);
+        html+=`<tr class="mhdr"><td colspan="10">${['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m]} ${y}</td></tr>`;
+      }
+      const isToday=ds===today;
+      const ac=row.hasActual?' actual-row':'';
+      const tc=isToday?' today-row':'';
+      const evts=row.events;
+      if(!evts.length){
+        html+=`<tr class="quiet${ac}${tc}">
+          <td>${fmtShort(ds)}${isToday?' ◀':''}</td><td></td>
+          <td style="color:var(--muted);font-size:9px;white-space:nowrap">${dayName(ds)}</td>
+          <td>${$c(row.bp)}</td><td>${$c(row.sp)}</td><td>${$c(row.ne)}</td>
+          <td>${$c(row.gf)}</td><td>${$c(row.eq)}</td><td>${$c(row.tr)}</td><td>${$c(row.mo)}</td>
+        </tr>`;
+      }else{
+        evts.forEach((evt,i)=>{
+          const isLast=i===evts.length-1;
+          const del=evt.txId?` <span onclick="deleteTx('${evt.txId}')" style="cursor:pointer;color:var(--muted);font-size:10px;margin-left:4px">✕</span>`:'';
+          html+=`<tr class="${evt.flag||''}${ac}${tc}">
+            <td>${i===0?fmtShort(ds)+(isToday?' ◀':''):''}</td>
+            <td>${evt.icon||''}</td>
+            <td style='white-space:normal;word-break:break-word;line-height:1.4'>${evt.label}${del}</td>
+            ${isLast?`<td>${$c(row.bp)}</td><td>${$c(row.sp)}</td><td>${$c(row.ne)}</td><td>${$c(row.gf)}</td><td>${$c(row.eq)}</td><td>${$c(row.tr)}</td><td>${$c(row.mo)}</td>`:`<td></td><td></td><td></td><td></td><td></td><td></td><td></td>`}
+          </tr>`;
+        });
+      }
+    });
+    document.getElementById('proj-body').innerHTML=html;
+  }catch(e){console.error('renderProjection error:',e);}
+}
+
+// ════════════════════════════════════════
+// TRANSACTION MODAL
+// ════════════════════════════════════════
+let txMode='custom';
+let txDir='out';
+
+function openTxModal(mode){
+  txMode=mode||'custom';
+  setTxMode(txMode);
+  document.getElementById('tx-date').value=dashDate;
+  document.getElementById('tx-amount').value='';
+  document.getElementById('tx-label').value='';
+  document.getElementById('tx-freq').value='once';
+  document.getElementById('tx-account').value='bp';
+  document.getElementById('bo-from').value=dashDate;
+  document.getElementById('bo-until').value='';
+  document.getElementById('bo-amount').value='';
+  autoSelectCCType();
+  document.getElementById('tr-date').value=dashDate;
+  document.getElementById('tr-amount').value='';
+  document.getElementById('tr-label').value='';
+  document.getElementById('tr-freq').value='once';
+  document.getElementById('tr-from').value='bp';
+  document.getElementById('tr-to').value='sp';
+  document.getElementById('tr-freq-hint').textContent='This transfer happens once on the selected date.';
+  setDir('out');
+  updateBoHint();
+  openModal('m-tx');
+}
+
+function setTxMode(mode){
+  txMode=mode;
+  document.getElementById('tx-custom-fields').style.display=mode==='custom'?'block':'none';
+  document.getElementById('tx-transfer-fields').style.display=mode==='transfer'?'block':'none';
+  document.getElementById('tx-override-fields').style.display=mode==='override'?'block':'none';
+  document.getElementById('tab-custom').classList.toggle('active',mode==='custom');
+  document.getElementById('tab-transfer').classList.toggle('active',mode==='transfer');
+  document.getElementById('tab-override').classList.toggle('active',mode==='override');
+}
+
+function setDir(dir){
+  txDir=dir;
+  document.getElementById('dir-out').className='dir-btn'+(dir==='out'?' on-out':'');
+  document.getElementById('dir-in').className='dir-btn'+(dir==='in'?' on-in':'');
+}
+
+function updateFreqHint(){
+  const hints={
+    once:'This transaction appears once on the selected date and cascades the projection forward from there.',
+    monthly:'This amount repeats on the same day every month starting from the selected date.',
+    biweekly:'This amount repeats every 14 days starting from the selected date.'
+  };
+  const el=document.getElementById('tx-freq-hint');
+  if(el)el.textContent=hints[document.getElementById('tx-freq').value]||'';
+}
+
+function updateBoHint(){
+  const bill=document.getElementById('bo-bill').value;
+  const defaults={ccn:S.ccn,ccq:S.ccq,mo:S.mo,ep:S.ep,tp:S.tp,cs:S.cs};
+  const cur=defaults[bill];
+  const el=document.getElementById('bo-hint');
+  const extra={
+    ccn:'September is a Quarter month — use the Quarter option for Sep/Dec/Mar/Jun payments.',
+    ccq:'Quarter months are Sep, Dec, Mar, Jun. These include the garbage charge ($64.44).',
+    mo:'',ep:'',tp:'',cs:''
+  };
+  if(el)el.textContent=`Current default: ${$c(cur)}. ${extra[bill]||''}The new amount replaces this from the effective date.`;
+}
+
+function autoSelectCCType(){
+  const fromDate = document.getElementById('bo-from').value;
+  if(!fromDate) return;
+  const month = parseInt(fromDate.slice(5,7));
+  const isQ = [3,6,9,12].includes(month);
+  const monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const hint = document.getElementById('bo-month-hint');
+  if(hint){
+    hint.textContent = monthNames[month] + ' is a ' + (isQ ? 'QUARTER month (Sep/Dec/Mar/Jun) — select the Quarter CC option above.' : 'normal month — select the Normal CC option above.');
+  }
+  // Auto-switch CC dropdown if CC is currently selected
+  const bill = document.getElementById('bo-bill').value;
+  if(bill === 'ccn' || bill === 'ccq'){
+    document.getElementById('bo-bill').value = isQ ? 'ccq' : 'ccn';
+    updateBoHint();
+  }
+}
+
+function updateTrFreqHint(){
+  const hints={
+    once:'This transfer happens once on the selected date.',
+    monthly:'Repeats on the same day every month from this date.',
+    biweekly:'Repeats every 14 days from this date.'
+  };
+  const el=document.getElementById('tr-freq-hint');
+  if(el)el.textContent=hints[document.getElementById('tr-freq').value]||'';
+}
+
+function saveTx(){
+  if(txMode==='transfer'){
+    const date=document.getElementById('tr-date').value;
+    const fromAcct=document.getElementById('tr-from').value;
+    const toAcct=document.getElementById('tr-to').value;
+    const rawAmt=parseFloat(document.getElementById('tr-amount').value);
+    const label=document.getElementById('tr-label').value.trim()||'Transfer';
+    const freq=document.getElementById('tr-freq').value;
+    if(!date){alert('Please select a date.');return;}
+    if(isNaN(rawAmt)||rawAmt<=0){alert('Please enter a positive amount.');return;}
+    if(fromAcct===toAcct){alert('From and To accounts must be different.');return;}
+    const txId=uid();
+    // Two linked transactions — negative from source, positive to destination
+    customTx.push({id:txId+'_out',date,account:fromAcct,amount:-rawAmt,label:'↔️ Transfer out: '+label,freq});
+    customTx.push({id:txId+'_in', date,account:toAcct, amount:+rawAmt,label:'↔️ Transfer in: '+label, freq});
+    dashDate=date;
+    document.getElementById('date-inp').value=dashDate;
+  }else if(txMode==='custom'){
+    const date=document.getElementById('tx-date').value;
+    const account=document.getElementById('tx-account').value;
+    const rawAmt=parseFloat(document.getElementById('tx-amount').value);
+    const label=document.getElementById('tx-label').value.trim()||'Custom transaction';
+    const freq=document.getElementById('tx-freq').value;
+    if(!date){alert('Please select a date.');return;}
+    if(isNaN(rawAmt)||rawAmt<=0){alert('Please enter a positive amount.');return;}
+    const amount=txDir==='out'?-rawAmt:rawAmt;
+    customTx.push({id:uid(),date,account,amount,label,freq});
+    // Jump dashboard to the transaction date so user sees the effect immediately
+    dashDate=date;
+    document.getElementById('date-inp').value=dashDate;
+  }else{
+    const fromDate=document.getElementById('bo-from').value;
+    const bill=document.getElementById('bo-bill').value;
+    const rawAmt=parseFloat(document.getElementById('bo-amount').value);
+    const untilDate=document.getElementById('bo-until').value||null;
+    if(!fromDate){alert('Please select an effective from date.');return;}
+    if(isNaN(rawAmt)||rawAmt<=0){alert('Please enter a positive amount.');return;}
+    billOvr.push({id:uid(),fromDate,bill,amount:rawAmt,untilDate});
+    // Jump to the from date
+    dashDate=fromDate;
+    document.getElementById('date-inp').value=dashDate;
+  }
+  closeModal('m-tx');
+  renderAll();
+  try{persist();}catch(e){console.warn('Storage unavailable - changes visible this session only');}
+}
+
+function deleteTx(id){
+  customTx=customTx.filter(t=>t.id!==id);
+  renderAll();try{persist();}catch(e){}
+}
+function deleteBo(id){
+  billOvr=billOvr.filter(o=>o.id!==id);
+  renderAll();try{persist();}catch(e){}
+}
+
+// ════════════════════════════════════════
+// SWEEP CALCULATOR
+// ════════════════════════════════════════
+function calcSweep(){
+  const bp=parseFloat(document.getElementById('sw-bp').value);
+  const qM=document.getElementById('sw-type').value==='quarter';
+  const ccR=qM?S.ccq:S.ccn;
+  const te=bp-S.fl-ccR;
+  const ok=!isNaN(bp)&&te>=S.st;
+  const res=document.getElementById('sw-result');
+  const dist=document.getElementById('sw-dist');
+  if(isNaN(bp)){res.innerHTML='';dist.style.display='none';return;}
+  res.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--muted);font-size:12px">True Excess</span><span style="font-family:var(--mono);font-size:14px;font-weight:700;color:${ok?'var(--green)':'var(--text)'}">${$c(te)}</span></div><div class="sr ${ok?'yes':'no'}"><div class="rl">${ok?'Sweep Triggered':'Not Yet'}</div><div class="rv">${ok?'YES — SWEEP NOW':$c(S.st-te)+' more needed'}</div><div class="rs">Threshold: ${$c(S.st)}</div></div></div>`;
+  if(ok){
+    dist.style.display='block';
+    const tot=S.ss+S.sn+S.sg;
+    document.getElementById('sw-s').textContent=$c(S.ss);
+    document.getElementById('sw-n').textContent=$c(S.sn);
+    document.getElementById('sw-g').textContent=$c(S.sg);
+    document.getElementById('sw-tot').textContent=$c(tot);
+    document.getElementById('sw-aft').textContent=$c(bp-tot);
+  }else dist.style.display='none';
+}
+
+// ════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════
+const SMAP={'s-pc':'pc','s-bppc':'bppc','s-sppc':'sppc','s-nepc':'nepc','s-gfpc':'gfpc','s-mo':'mo','s-ep':'ep','s-tp':'tp','s-cs':'cs','s-ccn':'ccn','s-ccq':'ccq','s-er':'er','s-tr':'tr','s-mr':'mr','s-fl':'fl','s-st':'st','s-ss':'ss','s-sn':'sn','s-sg':'sg','s-lt':'lt','s-bn':'bn','s-bp2':'bp2'};
+function loadSettingsUI(){Object.entries(SMAP).forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.value=S[k]!==undefined?S[k]:'';});}
+function saveSettings(){
+  Object.entries(SMAP).forEach(([id,k])=>{const el=document.getElementById(id);if(el&&el.value!=='')S[k]=parseFloat(el.value);});
+  persist();renderDash();alert('Settings saved ✓');
+}
+function resetDefaults(){
+  if(!confirm('Reset ALL settings, transactions, and actuals to original plan?'))return;
+  S={...DEF};actuals={};customTx=[];billOvr=[];dashDate=START.date;
+  persist();loadSettingsUI();renderDash();alert('Reset complete ✓');
+}
+
+// ════════════════════════════════════════
+// MODALS & NAV
+// ════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function applyDate(){
+  const v=document.getElementById('date-inp').value;
+  if(v){dashDate=v;persist();renderAll();}
+  closeModal('m-date');
+}
+
+function openActual(){
+  const bal=balAt(dashDate);
+  const ex=actuals[dashDate]||{};
+  document.getElementById('act-sub').innerHTML=`Enter real balances for <strong>${fmtLong(dashDate)}</strong>. Leave blank to keep projected.`;
+  const accts=[
+    {k:'bp',l:'Bill Pay',c:'var(--green)'},{k:'sp',l:'Spending Account',c:'var(--blue)'},
+    {k:'ne',l:'Nest Egg',c:'var(--gold)'},{k:'gf',l:'Goals Fund',c:'var(--purple)'},
+    {k:'eq',l:'Equity Line',c:'var(--red)'},{k:'tr',l:'Truck Loan',c:'var(--muted)'},
+    {k:'mo',l:'Mortgage',c:'#93c5fd'}
+  ];
+  document.getElementById('act-fields').innerHTML=accts.map(a=>`
+    <div class="field">
+      <label style="color:${a.c}">${a.l} <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">— projected: ${$c(bal[a.k])}</span></label>
+      <input type="number" id="ac-${a.k}" value="${ex[a.k]!==undefined&&ex[a.k]!==''?ex[a.k]:''}" placeholder="${$c(bal[a.k])}" step="0.01" style="font-family:var(--mono);font-size:16px;font-weight:600">
+    </div>`).join('');
+  openModal('m-actual');
+}
+
+function saveActuals(){
+  const keys=['bp','sp','ne','gf','eq','tr','mo'];
+  const entry={};let any=false;
+  keys.forEach(k=>{const el=document.getElementById('ac-'+k);if(el&&el.value!==''){entry[k]=parseFloat(el.value);any=true;}});
+  if(any)actuals[dashDate]=entry;else delete actuals[dashDate];
+  closeModal('m-actual');renderAll();try{persist();}catch(e){}
+}
+
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='projection')renderProjection();
+  if(name==='settings')loadSettingsUI();
+}
+
+function renderAll(){
+  renderDash();
+  if(document.getElementById('page-projection').classList.contains('active'))renderProjection();
+}
+
+document.querySelectorAll('.modal-ov').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+});
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+hydrate();
+Object.keys(DEF).forEach(k=>{if(S[k]===undefined)S[k]=DEF[k];});
+document.getElementById('date-inp').value=dashDate;
+renderDash();
+</script>
+</body>
+</html>
