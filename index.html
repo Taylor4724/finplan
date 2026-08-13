@@ -268,6 +268,18 @@ tr.today-row td:first-child{color:var(--green)!important;font-weight:700!importa
     <div class="sr2"><div><div class="sl">February bonus (net)</div></div><input type="number" id="s-bn" step="0.01"></div>
     <div class="sr2"><div><div class="sl">Bonus % to equity (e.g. 0.75)</div></div><input type="number" id="s-bp2" step="0.01"></div>
   </div>
+  <div class="sg"><div class="sg-t">Paycheck Schedule</div>
+    <div class="sr2"><div><div class="sl">First paycheck date</div><div class="ss">Bi-weekly schedule anchors from this date</div></div><input type="date" id="s-pcanchor"></div>
+    <div class="sr2"><div><div class="sl">Paycheck frequency (days)</div><div class="ss">14 = bi-weekly · 7 = weekly</div></div><input type="number" id="s-pcfreq" step="1" min="1"></div>
+  </div>
+  <div class="sg"><div class="sg-t">Bill Payment Days</div>
+    <div class="sr2"><div><div class="sl">Child support — day of month</div><div class="ss">Default: 1st</div></div><input type="number" id="s-csday" step="1" min="1" max="28"></div>
+    <div class="sr2"><div><div class="sl">CC payment — day of month</div><div class="ss">Default: 3rd (due 5th)</div></div><input type="number" id="s-ccpayday" step="1" min="1" max="28"></div>
+    <div class="sr2"><div><div class="sl">CC closing — day of month</div><div class="ss">Default: 8th</div></div><input type="number" id="s-cccloseday" step="1" min="1" max="28"></div>
+    <div class="sr2"><div><div class="sl">Equity + Truck auto-pay — day of month</div><div class="ss">Default: 25th</div></div><input type="number" id="s-autopayday" step="1" min="1" max="28"></div>
+    <div class="sr2"><div><div class="sl">Mortgage pay window — from day</div><div class="ss">Pay mortgage with paycheck in this window</div></div><input type="number" id="s-moday1" step="1" min="1" max="28"></div>
+    <div class="sr2"><div><div class="sl">Mortgage pay window — to day</div><div class="ss">Default window: 1st–15th</div></div><input type="number" id="s-moday2" step="1" min="1" max="28"></div>
+  </div>
   <button class="btn" onclick="saveSettings()" style="margin-bottom:8px">Save Settings</button>
   <button class="btn danger" onclick="resetDefaults()" style="margin-bottom:20px">Reset to Original Plan</button>
   <p style="font-size:11px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:16px">iPhone: Download → Safari → Share → Add to Home Screen</p>
@@ -444,7 +456,15 @@ const DEF={
   mo:0,ep:0,tp:0,cs:0,ccn:0,ccq:0,
   er:0.045,tr:0.0399,mr:0.03875,
   fl:1000,st:2500,ss:400,sn:600,sg:700,
-  lt:1500,bn:0,bp2:0.75
+  lt:1500,bn:0,bp2:0.75,
+  pcAnchor:'2026-08-20',  // First paycheck date — bi-weekly from here
+  pcFreqDays:14,           // Paycheck frequency in days (14=bi-weekly)
+  csDay:1,                 // Child support day of month
+  ccPayDay:3,              // CC payment day of month
+  ccCloseDay:8,            // CC closing day of month
+  autoPayDay:25,           // Equity + truck auto-pay day of month
+  moPayDay1:1,             // Mortgage pay window start (pay between day X...)
+  moPayDay2:15             // ...and day Y of month
 };
 // Verified Aug 6 2026 — after paycheck+transfers already fired. Next paycheck: Aug 20.
 const START={date:'2026-01-01',bp:0,sp:0,ne:0,gf:0,eq:0,tr:0,mo:0};
@@ -524,11 +544,11 @@ function effAmt(key,ds){
 // Every 14 days from Aug 20
 // ════════════════════════════════════════
 function buildPcSet(toDs){
-  const anchor=new Date('2026-01-01T12:00:00Z');
+  const anchor=new Date(S.pcAnchor+'T12:00:00Z');
   const to=new Date(toDs+'T12:00:00Z');
   const set=new Set();
   let d=new Date(anchor);
-  while(d<=to){set.add(d.toISOString().slice(0,10));d=new Date(d.getTime()+14*86400000);}
+  while(d<=to){set.add(d.toISOString().slice(0,10));d=new Date(d.getTime()+(S.pcFreqDays||14)*86400000);}
   return set;
 }
 
@@ -569,11 +589,15 @@ function simulate(toDs){
       const isFeb=monthCopy===2;
       const isNov=monthCopy===11;
       const nextMo=monthCopy===12?1:monthCopy+1;
-      const d01=`${ym}-01`;
-      const d03=`${ym}-03`;
-      const d08=`${ym}-08`;
+      const csD=String(Math.min(S.csDay||1,28)).padStart(2,'0');
+      const ccD=String(Math.min(S.ccPayDay||3,28)).padStart(2,'0');
+      const ccClD=String(Math.min(S.ccCloseDay||8,28)).padStart(2,'0');
+      const apD=String(Math.min(S.autoPayDay||25,28)).padStart(2,'0');
+      const d01=`${ym}-${csD}`;
+      const d03=`${ym}-${ccD}`;
+      const d08=`${ym}-${ccClD}`;
       const d15=`${ym}-15`;
-      const d25=`${ym}-25`;
+      const d25=`${ym}-${apD}`;
       const d26=`${ym}-26`;
 
       // Child support — 1st
@@ -662,7 +686,7 @@ function simulate(toDs){
       fn(b){b.bp+=S.bppc;b.sp+=S.sppc;b.ne+=S.nepc;b.gf+=S.gfpc;}});
 
     // Mortgage with first-half-month paycheck
-    if(dd>=1&&dd<=15){
+    if(dd>=(S.moPayDay1||1)&&dd<=(S.moPayDay2||15)){
       addE(ds,{pri:1,icon:'🏦',label:'Mortgage · Manual — pay with this check',flag:'manual',
         dynLabel:(ds)=>{
           const ovr=getOvr('mo',ds);
@@ -1135,15 +1159,23 @@ function calcSweep(){
 // ════════════════════════════════════════
 // SETTINGS
 // ════════════════════════════════════════
-const SMAP={'s-pc':'pc','s-bppc':'bppc','s-sppc':'sppc','s-nepc':'nepc','s-gfpc':'gfpc','s-mo':'mo','s-ep':'ep','s-tp':'tp','s-cs':'cs','s-ccn':'ccn','s-ccq':'ccq','s-er':'er','s-tr':'tr','s-mr':'mr','s-fl':'fl','s-st':'st','s-ss':'ss','s-sn':'sn','s-sg':'sg','s-lt':'lt','s-bn':'bn','s-bp2':'bp2'};
-function loadSettingsUI(){Object.entries(SMAP).forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.value=S[k]!==undefined?S[k]:'';});}
+const SMAP={'s-pc':'pc','s-bppc':'bppc','s-sppc':'sppc','s-nepc':'nepc','s-gfpc':'gfpc','s-mo':'mo','s-ep':'ep','s-tp':'tp','s-cs':'cs','s-ccn':'ccn','s-ccq':'ccq','s-er':'er','s-tr':'tr','s-mr':'mr','s-fl':'fl','s-st':'st','s-ss':'ss','s-sn':'sn','s-sg':'sg','s-lt':'lt','s-bn':'bn','s-bp2':'bp2','s-pcfreq':'pcFreqDays','s-csday':'csDay','s-ccpayday':'ccPayDay','s-cccloseday':'ccCloseDay','s-autopayday':'autoPayDay','s-moday1':'moPayDay1','s-moday2':'moPayDay2'};
+function loadSettingsUI(){
+  Object.entries(SMAP).forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.value=S[k]!==undefined?S[k]:'';});
+  // Handle pcAnchor date input separately
+  const pcAnchorEl=document.getElementById('s-pcanchor');
+  if(pcAnchorEl)pcAnchorEl.value=S.pcAnchor||'2026-08-20';
+}
 function saveSettings(){
   Object.entries(SMAP).forEach(([id,k])=>{const el=document.getElementById(id);if(el&&el.value!=='')S[k]=parseFloat(el.value);});
+  // pcAnchor is a date string, not a number
+  const pcAnchorEl=document.getElementById('s-pcanchor');
+  if(pcAnchorEl&&pcAnchorEl.value)S.pcAnchor=pcAnchorEl.value;
   persist();renderDash();alert('Settings saved ✓');
 }
 function resetDefaults(){
   if(!confirm('Reset ALL settings, transactions, and actuals to original plan?'))return;
-  S={...DEF};actuals={};customTx=[];billOvr=[];dashDate=START.date;
+  S={...DEF};actuals={};customTx=[];billOvr=[];dashDate=START.date;S.pcAnchor='2026-08-20';
   persist();loadSettingsUI();renderDash();alert('Reset complete ✓');
 }
 
