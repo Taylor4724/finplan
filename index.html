@@ -1171,7 +1171,7 @@ function saveSettings(){
   // pcAnchor is a date string, not a number
   const pcAnchorEl=document.getElementById('s-pcanchor');
   if(pcAnchorEl&&pcAnchorEl.value)S.pcAnchor=pcAnchorEl.value;
-  persist();renderDash();alert('Settings saved ✓');
+  persist();renderAll();alert('Settings saved ✓');
 }
 function resetDefaults(){
   if(!confirm('Reset ALL settings, transactions, and actuals to original plan?'))return;
